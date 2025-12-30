@@ -9,6 +9,23 @@ import streamlit as st
 st.set_page_config(page_title="Calorie tracker - Vitor & Thayná", layout="wide")
 
 # -----------------------------
+# TEMA CLARO (CSS)
+# -----------------------------
+st.markdown(
+    """
+    <style>
+      .stApp { background: #ffffff; color: #111827; }
+      /* Ajusta fundos de containers principais */
+      [data-testid="stAppViewContainer"] { background: #ffffff; }
+      [data-testid="stHeader"] { background: rgba(255,255,255,0.85); }
+      /* Títulos */
+      h1,h2,h3,h4 { color: #111827; }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# -----------------------------
 # Constantes
 # -----------------------------
 DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
@@ -27,11 +44,11 @@ class Profile:
     age: int
     weight_kg: float
     sex: str
-    base_intake_kcal: int
+    daily_limit_kcal: int  # <- limite fixo do dia
 
 PROFILES = {
-    "Vitor": Profile(name="Vitor", age=35, weight_kg=97.0, sex="M", base_intake_kcal=1400),
-    "Thayná": Profile(name="Thayná", age=32, weight_kg=63.0, sex="F", base_intake_kcal=1200),
+    "Vitor": Profile(name="Vitor", age=35, weight_kg=97.0, sex="M", daily_limit_kcal=1500),
+    "Thayná": Profile(name="Thayná", age=32, weight_kg=63.0, sex="F", daily_limit_kcal=1300),
 }
 
 # -----------------------------
@@ -70,11 +87,9 @@ def calc_running_kcal(weight_kg: float, distance_km: float, minutes: float):
     return kcal, speed, met
 
 # -----------------------------
-# Plano alimentar sugerido
+# Plano alimentar sugerido (1500 Vitor / 1300 Thayná por dia)
 # -----------------------------
 def meal_plan_template(profile_name: str) -> dict:
-    # Retorna dict: (Dia, Refeição) -> (Descrição, kcal)
-
     if profile_name == "Vitor":
         plan = {
             "Seg": {
@@ -91,7 +106,7 @@ def meal_plan_template(profile_name: str) -> dict:
                 "Jantar": ("Frango (150g) + salada + abobrinha", 400),
                 "Ceia": ("1 fruta (tangerina/pera pequena)", 100),
             },
-            "Qua": {
+            "Qua": {  # carne vermelha
                 "Whey pós-treino": ("Whey + leite (250ml) + café (sem açúcar)", 250),
                 "Almoço": ("Carne vermelha magra (150g) + salada + berinjela + arroz (1/3–1/2 xíc)", 650),
                 "Lanche": ("Uva (200g)", 150),
@@ -105,14 +120,14 @@ def meal_plan_template(profile_name: str) -> dict:
                 "Jantar": ("Atum (1 lata) + 2 ovos + salada", 430),
                 "Ceia": ("Café com leite (sem açúcar)", 100),
             },
-            "Sex": {
+            "Sex": {  # carne vermelha
                 "Whey pós-treino": ("Whey + leite (250ml) + café (sem açúcar)", 250),
                 "Almoço": ("Frango (180g) + salada + abóbora + arroz (1/2 xíc)", 600),
                 "Lanche": ("Goiaba", 150),
                 "Jantar": ("Carne vermelha magra (130g) + salada + abobrinha", 400),
                 "Ceia": ("Café com leite (sem açúcar)", 100),
             },
-            "Sáb": {
+            "Sáb": {  # refeição livre no almoço, dia ainda fecha 1500
                 "Whey pós-treino": ("Whey + leite (250ml) + café (sem açúcar)", 250),
                 "Almoço": ("REFEIÇÃO LIVRE (almoço)", 700),
                 "Lanche": ("Fruta leve (morangos ou tangerina)", 100),
@@ -127,8 +142,7 @@ def meal_plan_template(profile_name: str) -> dict:
                 "Ceia": ("Café com leite (sem açúcar)", 100),
             },
         }
-
-    else:  # Thayná
+    else:
         plan = {
             "Seg": {
                 "Whey pós-treino": ("Whey + leite (200ml) + café (sem açúcar)", 200),
@@ -144,7 +158,7 @@ def meal_plan_template(profile_name: str) -> dict:
                 "Jantar": ("Frango (100g) + salada + abobrinha", 370),
                 "Ceia": ("Café com leite (sem açúcar)", 80),
             },
-            "Qua": {
+            "Qua": {  # carne vermelha
                 "Whey pós-treino": ("Whey + leite (200ml) + café (sem açúcar)", 200),
                 "Almoço": ("Carne vermelha magra (100g) + salada + berinjela + arroz (1/3 xíc)", 560),
                 "Lanche": ("Uva (150g)", 110),
@@ -158,14 +172,14 @@ def meal_plan_template(profile_name: str) -> dict:
                 "Jantar": ("Atum (1 lata) OU frango (100g) + salada", 400),
                 "Ceia": ("Café com leite (sem açúcar)", 80),
             },
-            "Sex": {
+            "Sex": {  # carne vermelha
                 "Whey pós-treino": ("Whey + leite (200ml) + café (sem açúcar)", 200),
                 "Almoço": ("Frango (120g) + salada + abóbora + arroz (1/3–1/2 xíc)", 520),
                 "Lanche": ("Goiaba", 120),
                 "Jantar": ("Carne vermelha magra (90g) + salada + abobrinha", 380),
                 "Ceia": ("Café com leite (sem açúcar)", 80),
             },
-            "Sáb": {
+            "Sáb": {  # refeição livre no almoço, dia ainda fecha 1300
                 "Whey pós-treino": ("Whey + leite (200ml) + café (sem açúcar)", 200),
                 "Almoço": ("REFEIÇÃO LIVRE (almoço)", 600),
                 "Lanche": ("Fruta leve", 100),
@@ -197,8 +211,7 @@ def init_week_plan(profile_name: str) -> pd.DataFrame:
             desc, kcal = tpl.get((d, m), ("", 0))
             rows.append({"rid": rid, "Dia": d, "Refeição": m, "Descrição": desc, "Calorias (kcal)": int(kcal)})
             rid += 1
-    df = pd.DataFrame(rows).set_index("rid")
-    return df
+    return pd.DataFrame(rows).set_index("rid")
 
 def init_exercise_df() -> pd.DataFrame:
     rows = []
@@ -212,25 +225,27 @@ def init_exercise_df() -> pd.DataFrame:
 # Persistência (JSON por perfil)
 # -----------------------------
 def state_path(profile_name: str) -> Path:
-    safe = profile_name.lower().replace("ã", "a").replace("á", "a").replace("â", "a").replace(" ", "_")
+    safe = (
+        profile_name.lower()
+        .replace("ã", "a").replace("á", "a").replace("â", "a")
+        .replace(" ", "_")
+    )
     return DATA_DIR / f"state_{safe}.json"
 
-def save_profile_state(profile_name: str, plan_df: pd.DataFrame, ex_df: pd.DataFrame, base_intake: int, weight_kg: float):
+def save_profile_state(profile_name: str, plan_df: pd.DataFrame, ex_df: pd.DataFrame, weight_kg: float):
     payload = {
-        "base_intake": int(base_intake),
         "weight_kg": float(weight_kg),
         "plan": plan_df.reset_index().to_dict(orient="records"),
         "exercise": ex_df.reset_index().to_dict(orient="records"),
     }
     state_path(profile_name).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
-def load_profile_state(profile_name: str, default_base: int, default_weight: float):
+def load_profile_state(profile_name: str, default_weight: float):
     p = state_path(profile_name)
     if not p.exists():
         return None
     try:
         payload = json.loads(p.read_text(encoding="utf-8"))
-        base_intake = int(payload.get("base_intake", default_base))
         weight_kg = float(payload.get("weight_kg", default_weight))
 
         plan = pd.DataFrame(payload.get("plan", []))
@@ -241,7 +256,7 @@ def load_profile_state(profile_name: str, default_base: int, default_weight: flo
         if not ex.empty and "rid" in ex.columns:
             ex = ex.set_index("rid")
 
-        return base_intake, weight_kg, plan, ex
+        return weight_kg, plan, ex
     except Exception:
         return None
 
@@ -252,31 +267,25 @@ if "plans" not in st.session_state:
     st.session_state.plans = {}
 if "exercise" not in st.session_state:
     st.session_state.exercise = {}
-if "base_intake" not in st.session_state:
-    st.session_state.base_intake = {}
 if "weight" not in st.session_state:
     st.session_state.weight = {}
 
 # Inicializa cada perfil (carrega do disco se existir)
 for pname, prof in PROFILES.items():
     if pname not in st.session_state.plans:
-        loaded = load_profile_state(pname, prof.base_intake_kcal, prof.weight_kg)
+        loaded = load_profile_state(pname, prof.weight_kg)
         if loaded is None:
-            st.session_state.base_intake[pname] = prof.base_intake_kcal
             st.session_state.weight[pname] = prof.weight_kg
             st.session_state.plans[pname] = init_week_plan(pname)
             st.session_state.exercise[pname] = init_exercise_df()
-            save_profile_state(pname, st.session_state.plans[pname], st.session_state.exercise[pname],
-                               st.session_state.base_intake[pname], st.session_state.weight[pname])
+            save_profile_state(pname, st.session_state.plans[pname], st.session_state.exercise[pname], st.session_state.weight[pname])
         else:
-            base_intake, weight_kg, plan_df, ex_df = loaded
-            # fallback se algo vier vazio
+            weight_kg, plan_df, ex_df = loaded
             if plan_df is None or plan_df.empty:
                 plan_df = init_week_plan(pname)
             if ex_df is None or ex_df.empty:
                 ex_df = init_exercise_df()
 
-            st.session_state.base_intake[pname] = base_intake
             st.session_state.weight[pname] = weight_kg
             st.session_state.plans[pname] = plan_df
             st.session_state.exercise[pname] = ex_df
@@ -284,9 +293,9 @@ for pname, prof in PROFILES.items():
 # -----------------------------
 # UI
 # -----------------------------
-st.title("📊 Plano Alimentar + Gasto Calórico (Vitor & Thayná)")
+st.title("📊 Calorie tracker — Vitor & Thayná")
 
-c1, c2, c3 = st.columns([1.1, 1, 1])
+c1, c2, c3 = st.columns([1.2, 1, 1])
 
 with c1:
     selected = st.selectbox("Selecione o perfil", list(PROFILES.keys()))
@@ -303,32 +312,27 @@ with c2:
     st.session_state.weight[selected] = weight_kg
 
 with c3:
-    base_intake = st.number_input(
-        "Caloria base diária do plano (kcal)",
-        min_value=800, max_value=4000,
-        value=int(st.session_state.base_intake[selected]),
-        step=50,
-        key=f"base_{selected}",
-    )
-    st.session_state.base_intake[selected] = int(base_intake)
+    st.metric("Limite diário (kcal)", f"{prof.daily_limit_kcal}")
 
 st.divider()
 
 # -----------------------------
 # Exercícios
 # -----------------------------
-st.subheader("Exercícios da semana")
+st.subheader("🏃 Exercícios da semana")
 
 MUSC_MET_MODERADO = 6.0
 
 ex_df = st.session_state.exercise[selected].copy()
 
-ex_edited = st.data_editor(
-    ex_df.reset_index(),
+# UI sem rid e sem índice
+ex_ui = ex_df.reset_index().drop(columns=["rid"], errors="ignore")
+
+ex_ui_edited = st.data_editor(
+    ex_ui,
     use_container_width=True,
     num_rows="fixed",
     column_config={
-        "rid": st.column_config.NumberColumn("rid", disabled=True),
         "Dia": st.column_config.TextColumn(disabled=True),
         "Corrida (km)": st.column_config.NumberColumn(min_value=0.0, max_value=200.0, step=0.1),
         "Corrida (min)": st.column_config.NumberColumn(min_value=0.0, max_value=600.0, step=1.0),
@@ -337,11 +341,20 @@ ex_edited = st.data_editor(
     key=f"ex_editor_{selected}",
 )
 
-ex_edited = ex_edited.set_index("rid")
-st.session_state.exercise[selected] = ex_edited
+# Merge de volta pelo Dia (único)
+ex_full = ex_df.copy()
+for _, row in ex_ui_edited.iterrows():
+    mask = (ex_full["Dia"] == row["Dia"])
+    ex_full.loc[mask, ["Corrida (km)", "Corrida (min)", "Musculação (min)"]] = [
+        float(row["Corrida (km)"] or 0),
+        float(row["Corrida (min)"] or 0),
+        float(row["Musculação (min)"] or 0),
+    ]
+st.session_state.exercise[selected] = ex_full
 
+# Calcula gastos
 kcal_run_list, speed_list, met_list, kcal_musc_list, kcal_total_list = [], [], [], [], []
-for _, r in ex_edited.iterrows():
+for _, r in ex_full.iterrows():
     kcal_run, speed, met = calc_running_kcal(weight_kg, r["Corrida (km)"], r["Corrida (min)"])
     kcal_musc = kcal_from_met(weight_kg, r["Musculação (min)"], MUSC_MET_MODERADO)
     kcal_total = kcal_run + kcal_musc
@@ -352,7 +365,7 @@ for _, r in ex_edited.iterrows():
     kcal_musc_list.append(kcal_musc)
     kcal_total_list.append(kcal_total)
 
-ex_calc = ex_edited.copy()
+ex_calc = ex_full.copy()
 ex_calc["Vel. média (km/h)"] = [round(x, 1) for x in speed_list]
 ex_calc["MET corrida (estim.)"] = [round(x, 1) for x in met_list]
 ex_calc["Gasto corrida (kcal)"] = [int(round(x)) for x in kcal_run_list]
@@ -363,6 +376,7 @@ st.dataframe(
     ex_calc[["Dia", "Corrida (km)", "Corrida (min)", "Vel. média (km/h)", "MET corrida (estim.)",
              "Musculação (min)", "Gasto corrida (kcal)", "Gasto musculação (kcal)", "Gasto total exercício (kcal)"]],
     use_container_width=True,
+    hide_index=True,
 )
 
 st.caption("Corrida/HIIT: usa velocidade média (km/h) para estimar MET. Musculação moderada fixa em MET=6.0.")
@@ -372,7 +386,7 @@ st.divider()
 # -----------------------------
 # Plano alimentar com filtro por dia
 # -----------------------------
-st.subheader("Plano alimentar semanal sugerido")
+st.subheader("🍽️ Plano alimentar (editável)")
 
 day_filter = st.selectbox("Filtrar por dia", ["Todos"] + DAYS, index=0, key=f"day_filter_{selected}")
 
@@ -383,10 +397,10 @@ if day_filter == "Todos":
 else:
     plan_view = plan_full[plan_full["Dia"] == day_filter].copy()
 
-# cria DF apenas para visualização (sem índice e sem rid)
+# UI sem índice e sem rid
 plan_view_ui = plan_view.reset_index().drop(columns=["rid"], errors="ignore")
 
-plan_edited_view = st.data_editor(
+plan_ui_edited = st.data_editor(
     plan_view_ui,
     use_container_width=True,
     num_rows="fixed",
@@ -398,43 +412,31 @@ plan_edited_view = st.data_editor(
     },
     key=f"plan_editor_{selected}_{day_filter}",
 )
+
 # normaliza calorias
-plan_edited_view["Calorias (kcal)"] = (
-    plan_edited_view["Calorias (kcal)"]
+plan_ui_edited["Calorias (kcal)"] = (
+    plan_ui_edited["Calorias (kcal)"]
     .fillna(0)
     .astype(int)
     .clip(0, 20000)
 )
 
-# merge de volta no dataframe completo
-plan_full = st.session_state.plans[selected].copy()
+# Merge de volta por (Dia, Refeição) — não usa rid, então não dá KeyError
+plan_full2 = plan_full.copy()
+for _, row in plan_ui_edited.iterrows():
+    mask = (plan_full2["Dia"] == row["Dia"]) & (plan_full2["Refeição"] == row["Refeição"])
+    plan_full2.loc[mask, ["Descrição", "Calorias (kcal)"]] = [row["Descrição"], int(row["Calorias (kcal)"])]
 
-for _, row in plan_edited_view.iterrows():
-    mask = (
-        (plan_full["Dia"] == row["Dia"]) &
-        (plan_full["Refeição"] == row["Refeição"])
-    )
-    plan_full.loc[mask, ["Descrição", "Calorias (kcal)"]] = [
-        row["Descrição"],
-        row["Calorias (kcal)"]
-    ]
-
-st.session_state.plans[selected] = plan_full
-plan_edited_view = plan_edited_view.set_index("rid")
-plan_edited_view["Calorias (kcal)"] = (
-    plan_edited_view["Calorias (kcal)"].fillna(0).astype(int).clip(0, 20000)
-)
-
-# Merge de volta para o plano completo (atualiza só os rids editados)
-plan_full.loc[plan_edited_view.index, ["Descrição", "Calorias (kcal)"]] = plan_edited_view[["Descrição", "Calorias (kcal)"]]
-st.session_state.plans[selected] = plan_full
+st.session_state.plans[selected] = plan_full2
 
 st.divider()
 
 # -----------------------------
-# Resumo por dia (ordenado Seg..Dom)
+# Resumo por dia (ordenado Seg..Dom) + ALERTAS + DESTAQUE
 # -----------------------------
-st.subheader("Resumo por dia")
+st.subheader("📈 Resumo por dia")
+
+plan_full = st.session_state.plans[selected].copy()
 
 daily_intake = (
     plan_full.groupby("Dia", as_index=False)["Calorias (kcal)"]
@@ -447,43 +449,72 @@ daily_ex = ex_calc[["Dia", "Gasto total exercício (kcal)"]].reset_index(drop=Tr
 daily = daily_intake.merge(daily_ex, on="Dia", how="left")
 daily["Gasto total exercício (kcal)"] = daily["Gasto total exercício (kcal)"].fillna(0).astype(int)
 
-daily["Base do plano (kcal)"] = int(base_intake)
-daily["Base + exercício (kcal)"] = daily["Base do plano (kcal)"] + daily["Gasto total exercício (kcal)"]
-daily["Saldo (Base+Ex - Ingestão)"] = daily["Base + exercício (kcal)"] - daily["Ingestão (kcal)"]
+daily_limit = int(prof.daily_limit_kcal)
+daily["Limite diário (kcal)"] = daily_limit
+daily["Diferença (Limite - Ingestão)"] = daily["Limite diário (kcal)"] - daily["Ingestão (kcal)"]
 
 daily["__ord"] = daily["Dia"].map(DAY_ORDER).fillna(999).astype(int)
 daily = daily.sort_values("__ord").drop(columns=["__ord"])
 
+over = daily[daily["Ingestão (kcal)"] > daily_limit]
+under = daily[daily["Ingestão (kcal)"] < daily_limit]
+
+if not over.empty:
+    excedentes = ", ".join(
+        [f"{r['Dia']} (+{int(r['Ingestão (kcal)'] - daily_limit)} kcal)" for _, r in over.iterrows()]
+    )
+    st.error(f"Acima do limite em: {excedentes}")
+
+if not under.empty:
+    faltas = ", ".join(
+        [f"{r['Dia']} (-{int(daily_limit - r['Ingestão (kcal)'])} kcal)" for _, r in under.iterrows()]
+    )
+    st.info(f"Abaixo do limite em: {faltas}")
+
+def highlight_rows(row):
+    if int(row["Ingestão (kcal)"]) > daily_limit:
+        return ["background-color: rgba(255, 0, 0, 0.18)"] * len(row)
+    return [""] * len(row)
+
+cols_show = [
+    "Dia",
+    "Ingestão (kcal)",
+    "Gasto total exercício (kcal)",
+    "Limite diário (kcal)",
+    "Diferença (Limite - Ingestão)",
+]
+
 st.dataframe(
-    daily[["Dia", "Ingestão (kcal)", "Gasto total exercício (kcal)", "Base do plano (kcal)", "Base + exercício (kcal)", "Saldo (Base+Ex - Ingestão)"]],
+    daily[cols_show].style.apply(highlight_rows, axis=1),
     use_container_width=True,
+    hide_index=True,
 )
 
+# -----------------------------
 # Semana
-st.subheader("Total da semana")
+# -----------------------------
+st.subheader("🧾 Total da semana")
+
 week_intake = int(daily["Ingestão (kcal)"].sum())
 week_ex = int(daily["Gasto total exercício (kcal)"].sum())
-week_base = int(base_intake * 7)
-week_base_plus_ex = int(daily["Base + exercício (kcal)"].sum())
-week_saldo = int(week_base_plus_ex - week_intake)
+week_limit = int(daily_limit * 7)
+week_balance = int(week_limit - week_intake)
 
 k1, k2, k3, k4 = st.columns(4)
-k1.metric("Ingestão semanal (kcal) (+)", f"{week_intake}")
-k2.metric("Exercício semanal (kcal)(-)", f"{week_ex}")
-k3.metric("Base semanal (kcal)(-)", f"{week_base}")
-k4.metric("Gasto total semanal", f"{week_saldo}")
+k1.metric("Ingestão semanal (kcal)", f"{week_intake}")
+k2.metric("Exercício semanal (kcal)", f"{week_ex}")
+k3.metric("Limite semanal (kcal)", f"{week_limit}")
+k4.metric("Saldo semanal (Limite - Ingestão)", f"{week_balance}")
 
 st.divider()
 
 # -----------------------------
-# Ações + SALVAR AUTOMÁTICO
+# SALVAR AUTOMÁTICO + AÇÕES
 # -----------------------------
-# salva automaticamente a cada execução após as edições
 save_profile_state(
     selected,
     st.session_state.plans[selected],
     st.session_state.exercise[selected],
-    st.session_state.base_intake[selected],
     st.session_state.weight[selected],
 )
 
@@ -491,15 +522,13 @@ a1, a2 = st.columns([1, 1])
 
 with a1:
     if st.button("🔄 Resetar (perfil atual)"):
+        st.session_state.weight[selected] = PROFILES[selected].weight_kg
         st.session_state.plans[selected] = init_week_plan(selected)
         st.session_state.exercise[selected] = init_exercise_df()
-        st.session_state.base_intake[selected] = PROFILES[selected].base_intake_kcal
-        st.session_state.weight[selected] = PROFILES[selected].weight_kg
         save_profile_state(
             selected,
             st.session_state.plans[selected],
             st.session_state.exercise[selected],
-            st.session_state.base_intake[selected],
             st.session_state.weight[selected],
         )
         st.rerun()
@@ -509,12 +538,10 @@ with a2:
         other = "Thayná" if selected == "Vitor" else "Vitor"
         st.session_state.plans[selected] = st.session_state.plans[other].copy()
         st.session_state.exercise[selected] = st.session_state.exercise[other].copy()
-        # mantém base/peso do perfil atual
         save_profile_state(
             selected,
             st.session_state.plans[selected],
             st.session_state.exercise[selected],
-            st.session_state.base_intake[selected],
             st.session_state.weight[selected],
         )
         st.rerun()
