@@ -332,12 +332,14 @@ if day_filter == "Todos":
 else:
     plan_view = plan_full[plan_full["Dia"] == day_filter].copy()
 
+# cria DF apenas para visualização (sem índice e sem rid)
+plan_view_ui = plan_view.reset_index().drop(columns=["rid"], errors="ignore")
+
 plan_edited_view = st.data_editor(
-    plan_view.reset_index(),
+    plan_view_ui,
     use_container_width=True,
     num_rows="fixed",
     column_config={
-        "rid": st.column_config.NumberColumn("rid", disabled=True),
         "Dia": st.column_config.TextColumn(disabled=True),
         "Refeição": st.column_config.TextColumn(disabled=True),
         "Descrição": st.column_config.TextColumn(width="large"),
@@ -345,7 +347,28 @@ plan_edited_view = st.data_editor(
     },
     key=f"plan_editor_{selected}_{day_filter}",
 )
+# normaliza calorias
+plan_edited_view["Calorias (kcal)"] = (
+    plan_edited_view["Calorias (kcal)"]
+    .fillna(0)
+    .astype(int)
+    .clip(0, 20000)
+)
 
+# merge de volta no dataframe completo
+plan_full = st.session_state.plans[selected].copy()
+
+for _, row in plan_edited_view.iterrows():
+    mask = (
+        (plan_full["Dia"] == row["Dia"]) &
+        (plan_full["Refeição"] == row["Refeição"])
+    )
+    plan_full.loc[mask, ["Descrição", "Calorias (kcal)"]] = [
+        row["Descrição"],
+        row["Calorias (kcal)"]
+    ]
+
+st.session_state.plans[selected] = plan_full
 plan_edited_view = plan_edited_view.set_index("rid")
 plan_edited_view["Calorias (kcal)"] = (
     plan_edited_view["Calorias (kcal)"].fillna(0).astype(int).clip(0, 20000)
