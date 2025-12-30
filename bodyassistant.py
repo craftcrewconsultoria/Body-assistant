@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="Plano & Calorias - Vitor & Thayná", layout="wide")
+st.set_page_config(page_title="Calorie tracker - Vitor & Thayná", layout="wide")
 
 # -----------------------------
 # Constantes
@@ -266,7 +266,7 @@ st.divider()
 # -----------------------------
 # Exercícios
 # -----------------------------
-st.subheader("🏃 Exercícios (semana) — Corrida/HIIT + Musculação")
+st.subheader("Exercícios da semana")
 
 MUSC_MET_MODERADO = 6.0
 
@@ -321,7 +321,7 @@ st.divider()
 # -----------------------------
 # Plano alimentar com filtro por dia
 # -----------------------------
-st.subheader("🍽️ Plano alimentar semanal")
+st.subheader("Plano alimentar semanal sugerido")
 
 day_filter = st.selectbox("Filtrar por dia", ["Todos"] + DAYS, index=0, key=f"day_filter_{selected}")
 
@@ -360,7 +360,7 @@ st.divider()
 # -----------------------------
 # Resumo por dia (ordenado Seg..Dom)
 # -----------------------------
-st.subheader("📈 Resumo por dia")
+st.subheader("Resumo por dia")
 
 daily_intake = (
     plan_full.groupby("Dia", as_index=False)["Calorias (kcal)"]
@@ -386,7 +386,7 @@ st.dataframe(
 )
 
 # Semana
-st.subheader("🧾 Semana (totais)")
+st.subheader("Total da semana")
 week_intake = int(daily["Ingestão (kcal)"].sum())
 week_ex = int(daily["Gasto total exercício (kcal)"].sum())
 week_base = int(base_intake * 7)
@@ -394,10 +394,10 @@ week_base_plus_ex = int(daily["Base + exercício (kcal)"].sum())
 week_saldo = int(week_base_plus_ex - week_intake)
 
 k1, k2, k3, k4 = st.columns(4)
-k1.metric("Ingestão semanal (kcal)", f"{week_intake}")
-k2.metric("Exercício semanal (kcal)", f"{week_ex}")
-k3.metric("Base semanal (kcal)", f"{week_base}")
-k4.metric("Saldo semanal (Base+Ex - Ingestão)", f"{week_saldo}")
+k1.metric("Ingestão semanal (kcal) (+)", f"{week_intake}")
+k2.metric("Exercício semanal (kcal)(-)", f"{week_ex}")
+k3.metric("Base semanal (kcal)(-)", f"{week_base}")
+k4.metric("Gasto total semanal", f"{week_saldo}")
 
 st.divider()
 
