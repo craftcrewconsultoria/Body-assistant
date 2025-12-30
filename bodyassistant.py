@@ -73,68 +73,119 @@ def calc_running_kcal(weight_kg: float, distance_km: float, minutes: float):
 # Plano alimentar sugerido
 # -----------------------------
 def meal_plan_template(profile_name: str) -> dict:
-    if profile_name == "Thayná":
-        whey = ("Whey com leite (200ml) + café expresso (sem açúcar)", 220)
-        lanches = [
-            ("1 fruta (banana OU mamão) + café expresso", 140),
-            ("Morangos (200g) OU uva (150g)", 120),
-            ("Pera OU tangerina + café com leite (sem açúcar)", 170),
-            ("Goiaba + café expresso", 120),
-        ]
-        almocos = {
-            "Seg": ("Frango (120g) + salada (alface/rúcula/tomate) + abobrinha + 1/2 xíc. arroz parboilizado", 500),
-            "Ter": ("Frango (120g) + abóbora assada + salada + 1 batata média", 480),
-            "Qua": ("Carne vermelha magra (100g) + salada + berinjela + 1/2 xíc. arroz parboilizado", 520),
-            "Qui": ("Frango (120g) + abobrinha + salada + 1/2 xíc. arroz parboilizado", 490),
-            "Sex": ("Frango (120g) + abóbora + salada + batata (pequena/média)", 480),
-            "Sáb": ("REFEIÇÃO LIVRE (almoço)", 650),
-            "Dom": ("Frango (120g) + salada + legumes + 1/2 xíc. arroz parboilizado", 490),
+    # Retorna dict: (Dia, Refeição) -> (Descrição, kcal)
+
+    if profile_name == "Vitor":
+        plan = {
+            "Seg": {
+                "Whey pós-treino": ("Whey + leite (250ml) + café (sem açúcar)", 250),
+                "Almoço": ("Frango (180g) + salada (alface/rúcula/tomate) + abobrinha + arroz parboilizado (1/2 xíc)", 600),
+                "Lanche": ("Banana", 150),
+                "Jantar": ("Omelete (3 ovos) + salada grande + berinjela", 400),
+                "Ceia": ("Café com leite (sem açúcar)", 100),
+            },
+            "Ter": {
+                "Whey pós-treino": ("Whey + leite (250ml) + café (sem açúcar)", 250),
+                "Almoço": ("Frango (180g) + abóbora assada + salada + batata pequena", 600),
+                "Lanche": ("Mamão (300g)", 150),
+                "Jantar": ("Frango (150g) + salada + abobrinha", 400),
+                "Ceia": ("1 fruta (tangerina/pera pequena)", 100),
+            },
+            "Qua": {
+                "Whey pós-treino": ("Whey + leite (250ml) + café (sem açúcar)", 250),
+                "Almoço": ("Carne vermelha magra (150g) + salada + berinjela + arroz (1/3–1/2 xíc)", 650),
+                "Lanche": ("Uva (200g)", 150),
+                "Jantar": ("Creme de abóbora + frango desfiado (120g) + salada", 350),
+                "Ceia": ("Café com leite (sem açúcar)", 100),
+            },
+            "Qui": {
+                "Whey pós-treino": ("Whey + leite (250ml) + café (sem açúcar)", 250),
+                "Almoço": ("Frango (180g) + salada + abobrinha + batata média", 600),
+                "Lanche": ("Morango (250g)", 120),
+                "Jantar": ("Atum (1 lata) + 2 ovos + salada", 430),
+                "Ceia": ("Café com leite (sem açúcar)", 100),
+            },
+            "Sex": {
+                "Whey pós-treino": ("Whey + leite (250ml) + café (sem açúcar)", 250),
+                "Almoço": ("Frango (180g) + salada + abóbora + arroz (1/2 xíc)", 600),
+                "Lanche": ("Goiaba", 150),
+                "Jantar": ("Carne vermelha magra (130g) + salada + abobrinha", 400),
+                "Ceia": ("Café com leite (sem açúcar)", 100),
+            },
+            "Sáb": {
+                "Whey pós-treino": ("Whey + leite (250ml) + café (sem açúcar)", 250),
+                "Almoço": ("REFEIÇÃO LIVRE (almoço)", 700),
+                "Lanche": ("Fruta leve (morangos ou tangerina)", 100),
+                "Jantar": ("Salada grande + frango (150g) (bem limpo)", 350),
+                "Ceia": ("Café com leite (sem açúcar)", 100),
+            },
+            "Dom": {
+                "Whey pós-treino": ("Whey + leite (250ml) + café (sem açúcar)", 250),
+                "Almoço": ("Frango (180g) + salada + legumes + arroz (1/2 xíc)", 600),
+                "Lanche": ("Pera", 150),
+                "Jantar": ("Omelete (3 ovos) + salada + abobrinha", 400),
+                "Ceia": ("Café com leite (sem açúcar)", 100),
+            },
         }
-        jantares = {
-            "Seg": ("Omelete (2 ovos) + salada grande + abobrinha", 380),
-            "Ter": ("Frango (100g) + salada + berinjela", 350),
-            "Qua": ("Creme de abóbora + frango desfiado (80g) + salada", 360),
-            "Qui": ("Atum (1 lata) OU frango (100g) + salada + legumes", 360),
-            "Sex": ("Carne vermelha magra (90g) + salada + abobrinha", 390),
-            "Sáb": ("Jantar leve: salada + frango (100g) OU omelete (2 ovos)", 360),
-            "Dom": ("Frango (100g) + salada + berinjela", 350),
+
+    else:  # Thayná
+        plan = {
+            "Seg": {
+                "Whey pós-treino": ("Whey + leite (200ml) + café (sem açúcar)", 200),
+                "Almoço": ("Frango (120g) + salada (alface/rúcula/tomate) + abobrinha + arroz (1/3–1/2 xíc)", 520),
+                "Lanche": ("Banana pequena", 120),
+                "Jantar": ("Omelete (2 ovos) + salada grande + berinjela", 380),
+                "Ceia": ("Café com leite (sem açúcar)", 80),
+            },
+            "Ter": {
+                "Whey pós-treino": ("Whey + leite (200ml) + café (sem açúcar)", 200),
+                "Almoço": ("Frango (120g) + abóbora assada + salada + batata pequena", 520),
+                "Lanche": ("Mamão (250–300g)", 130),
+                "Jantar": ("Frango (100g) + salada + abobrinha", 370),
+                "Ceia": ("Café com leite (sem açúcar)", 80),
+            },
+            "Qua": {
+                "Whey pós-treino": ("Whey + leite (200ml) + café (sem açúcar)", 200),
+                "Almoço": ("Carne vermelha magra (100g) + salada + berinjela + arroz (1/3 xíc)", 560),
+                "Lanche": ("Uva (150g)", 110),
+                "Jantar": ("Creme de abóbora + frango desfiado (80g) + salada", 350),
+                "Ceia": ("Café com leite (sem açúcar)", 80),
+            },
+            "Qui": {
+                "Whey pós-treino": ("Whey + leite (200ml) + café (sem açúcar)", 200),
+                "Almoço": ("Frango (120g) + salada + abobrinha + batata pequena", 520),
+                "Lanche": ("Morango (200g)", 100),
+                "Jantar": ("Atum (1 lata) OU frango (100g) + salada", 400),
+                "Ceia": ("Café com leite (sem açúcar)", 80),
+            },
+            "Sex": {
+                "Whey pós-treino": ("Whey + leite (200ml) + café (sem açúcar)", 200),
+                "Almoço": ("Frango (120g) + salada + abóbora + arroz (1/3–1/2 xíc)", 520),
+                "Lanche": ("Goiaba", 120),
+                "Jantar": ("Carne vermelha magra (90g) + salada + abobrinha", 380),
+                "Ceia": ("Café com leite (sem açúcar)", 80),
+            },
+            "Sáb": {
+                "Whey pós-treino": ("Whey + leite (200ml) + café (sem açúcar)", 200),
+                "Almoço": ("REFEIÇÃO LIVRE (almoço)", 600),
+                "Lanche": ("Fruta leve", 100),
+                "Jantar": ("Salada grande + frango (100g)", 320),
+                "Ceia": ("Café com leite (sem açúcar)", 80),
+            },
+            "Dom": {
+                "Whey pós-treino": ("Whey + leite (200ml) + café (sem açúcar)", 200),
+                "Almoço": ("Frango (120g) + salada + legumes + arroz (1/3–1/2 xíc)", 520),
+                "Lanche": ("Pera ou tangerina", 120),
+                "Jantar": ("Omelete (2 ovos) + salada + abobrinha", 380),
+                "Ceia": ("Café com leite (sem açúcar)", 80),
+            },
         }
-        ceia = ("Café com leite (sem açúcar) OU 1 fruta pequena", 120)
-    else:
-        whey = ("Whey com leite (250ml) + (opcional) shot de café (sem açúcar)", 280)
-        lanches = [
-            ("1 banana + café expresso", 170),
-            ("Mamão (300g) OU uva (200g)", 160),
-            ("Pera + café com leite (sem açúcar)", 200),
-            ("Goiaba + café expresso", 150),
-        ]
-        almocos = {
-            "Seg": ("Frango (180g) + salada (alface/rúcula/tomate) + abobrinha + 3/4 xíc. arroz parboilizado", 650),
-            "Ter": ("Frango (180g) + abóbora assada + salada + 1 batata média", 630),
-            "Qua": ("Carne vermelha magra (150g) + salada + berinjela + 3/4 xíc. arroz parboilizado", 700),
-            "Qui": ("Frango (180g) + salada + abobrinha + 3/4 xíc. arroz parboilizado", 640),
-            "Sex": ("Frango (180g) + abóbora + salada + batata média", 630),
-            "Sáb": ("REFEIÇÃO LIVRE (almoço)", 850),
-            "Dom": ("Frango (180g) + salada + legumes + 3/4 xíc. arroz parboilizado", 650),
-        }
-        jantares = {
-            "Seg": ("Omelete (3 ovos) + salada grande + abobrinha", 480),
-            "Ter": ("Frango (150g) + salada + berinjela", 430),
-            "Qua": ("Creme de abóbora + frango desfiado (120g) + salada", 450),
-            "Qui": ("Atum (1 lata) + 2 ovos OU frango (150g) + salada + legumes", 480),
-            "Sex": ("Carne vermelha magra (130g) + salada + abobrinha", 500),
-            "Sáb": ("Jantar leve: salada + frango (150g) OU omelete (3 ovos)", 480),
-            "Dom": ("Frango (150g) + salada + berinjela", 430),
-        }
-        ceia = ("Café com leite (sem açúcar) OU 1 fruta", 150)
 
     tpl = {}
-    for i, d in enumerate(DAYS):
-        tpl[(d, "Whey pós-treino")] = whey
-        tpl[(d, "Almoço")] = almocos[d]
-        tpl[(d, "Lanche")] = lanches[i % len(lanches)]
-        tpl[(d, "Jantar")] = jantares[d]
-        tpl[(d, "Ceia")] = ceia
+    for d in DAYS:
+        for m in MEALS:
+            desc, kcal = plan[d][m]
+            tpl[(d, m)] = (desc, int(kcal))
     return tpl
 
 def init_week_plan(profile_name: str) -> pd.DataFrame:
